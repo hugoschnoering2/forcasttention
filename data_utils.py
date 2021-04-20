@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 import torch
+from torch.utils.data import TensorDataset
 
 def create_dataset(file, train_per, seq_length, step_size):
   df = pd.read_csv(file)
