@@ -26,8 +26,8 @@ def train_one_epoch(dataloader, model, loss, optimizer, device):
     input = batch[0].to(device).permute(1, 0, 2)
     batch_size = input.shape[1]
     pred = model(input)
-    pred_error = loss(input.permute(1, 0, 2).view(batch_size, -1),
-                      pred.permute(1, 0, 2).view(batch_size, -1))
+    pred_error = loss(input.permute(1, 0, 2).reshape(batch_size, -1),
+                      pred.permute(1, 0, 2).reshape(batch_size, -1))
     running_loss += pred_error.item()
     pred_error.backward()
     optimizer.step()
@@ -41,8 +41,8 @@ def evaluate_one_epoch(dataloader, model, loss, device):
         input = batch[0].to(device).permute(1, 0, 2)
         batch_size = input.shape[1]
         pred = model(input)
-        pred_error = loss(input.permute(1, 0, 2).view(batch_size, -1),
-                          pred.permute(1, 0, 2).view(batch_size, -1))
+        pred_error = loss(input.permute(1, 0, 2).reshape(batch_size, -1),
+                          pred.permute(1, 0, 2).reshape(batch_size, -1))
         running_loss += pred_error.item()
   return running_loss / len(dataloader)
 
