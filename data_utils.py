@@ -19,7 +19,7 @@ def create_dataset(file, train_per, seq_length, step_size, transformation):
   for i in range(train_size):
     sample = data[i: i + seq_length * step_size].astype(np.float32)
     train.append(np.split(sample, seq_length))
-  for i in range(train_size, len(arr) - seq_length * step_size):
+  for i in range(train_size, len(data) - seq_length * step_size):
     sample = data[i: i + seq_length * step_size].astype(np.float32)
     val.append(np.split(sample, seq_length))
   train, val = np.array(train), np.array(val)
