@@ -85,7 +85,7 @@ if __name__ == "__main__":
 
     if config.model == "lstm_ae":
         from models.lstm.lstm import LSTM_AE
-        model = LSTM_AE(config.step_size, config.embed_size, config.num_layers_ae)
+        model = LSTM_AE(config.step_size, config.embed_size, config.num_layers_ae).to(device)
     else:
         raise NotImplementedError()
 
