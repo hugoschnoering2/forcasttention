@@ -3,6 +3,7 @@ num_layers_ae : 2
 seed : 1
 results_folder : ""
 file : "data/BTCUSDT-1h-data.csv"
+data_transform : "logr"
 train_per : 0.7
 seq_length : 12
 step_size : 24

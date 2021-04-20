@@ -77,7 +77,7 @@ if __name__ == "__main__":
                         level=logging.DEBUG)
     logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
-    train_dataset, val_dataset = create_dataset(config.file, config.train_per, config.seq_length, config.step_size)
+    train_dataset, val_dataset = create_dataset(config.file, config.train_per, config.seq_length, config.step_size, config.data_transform)
     train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True)
     val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False)
 
