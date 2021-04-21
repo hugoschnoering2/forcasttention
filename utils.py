@@ -1,4 +1,6 @@
 
+import os
+
 import argparse
 import yaml
 
@@ -16,5 +18,5 @@ def _parse_args():
     cli_args = parser.parse_args()
     with open(cli_args.config, "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
-    config = YamlNamespace(config)
-    return config
+    config_ = YamlNamespace(config)
+    return config_, config
