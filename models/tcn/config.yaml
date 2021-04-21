@@ -8,6 +8,7 @@ seed : 1
 results_folder : ""
 file : "data/BTCUSDT-1h-data.csv"
 data_transform : "logr"
+standardization : true
 train_per : 0.7
 sample_size : 120
 batch_size : 32

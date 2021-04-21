@@ -17,7 +17,7 @@ class LSTM(nn.Module):
                  input_size,
                  hidden_size,
                  num_layers=1,
-                 dropout=0,
+                 dropout=0.1,
                  bidirectional=0,
                  batch_first=False,
                  cln=True):
