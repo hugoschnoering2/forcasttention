@@ -1,6 +1,7 @@
-model : "gru_ae_all"
+model : "lstm_ae_all"
 num_layers_encoder : 1
 num_layers_decoder : 1
+layer_norm : true
 seed : 1
 results_folder : ""
 file : "data/BTCUSDT-1h-data.csv"

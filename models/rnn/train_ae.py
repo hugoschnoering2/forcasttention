@@ -100,10 +100,10 @@ if __name__ == "__main__":
 
     if config.model == "lstm_ae":
         from models.rnn.lstm_ae import LSTM_AE
-        model = LSTM_AE(config.step_size, config.embed_size, config.num_layers_encoder, config.num_layers_decoder).to(device)
+        model = LSTM_AE(config.step_size, config.embed_size, config.num_layers_encoder, config.num_layers_decoder, config.layer_norm).to(device)
     elif config.model == "lstm_ae_all":
         from models.rnn.lstm_ae import LSTM_AE_all
-        model = LSTM_AE_all(config.step_size, config.embed_size, config.num_layers_encoder, config.num_layers_decoder).to(device)
+        model = LSTM_AE_all(config.step_size, config.embed_size, config.num_layers_encoder, config.num_layers_decoder, config.layer_norm).to(device)
     elif config.model == "gru_ae":
         from models.rnn.gru_ae import GRU_AE
         model = GRU_AE(config.step_size, config.embed_size, config.num_layers_encoder, config.num_layers_decoder).to(device)
