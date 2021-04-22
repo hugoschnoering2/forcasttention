@@ -1,7 +1,7 @@
-model : "lstm_ae_all"
+model : "lstm_ae"
 num_layers_encoder : 1
 num_layers_decoder : 1
-layer_norm : true
+layer_norm : false
 seed : 1
 results_folder : ""
 file : "data/BTCUSDT-1h-data.csv"
@@ -10,7 +10,7 @@ standardization : true
 train_per : 0.7
 seq_length : 5
 step_size : 24
-embed_size : 10
+embed_size : 50
 batch_size : 32
 lr : 0.001
 num_epochs : 501

@@ -20,17 +20,12 @@ from data_utils import create_dataset
 from utils import _parse_args
 from soft_dtw_loss import SoftDTW
 
-def train_one_epoch(dataloader, model, loss, optimizer, device, config):
-  if config.standardization:
-      layer_norm = nn.LayerNorm((1, config.sample_size), elementwise_affine=False).to(device)
+def train_one_epoch(dataloader, model, loss, optimizer, device):
   running_loss = 0.
   for batch in dataloader:
     model.train()
     model.zero_grad()
-    if config.standardization:
-        input = layer_norm(batch[0].to(device))
-    else:
-        input = batch[0].to(device)
+    input = batch[0].to(device)
     batch_size = input.shape[0]
     pred = model(input)
     pred_error = loss(input.reshape(batch_size, -1),
@@ -40,19 +35,14 @@ def train_one_epoch(dataloader, model, loss, optimizer, device, config):
     optimizer.step()
   return running_loss / len(dataloader)
 
-def evaluate_one_epoch(dataloader, model, loss, device, config):
-  if config.standardization:
-      layer_norm = nn.LayerNorm((1, config.sample_size), elementwise_affine=False).to(device)
+def evaluate_one_epoch(dataloader, model, loss, device):
   running_loss = 0.
   sdtw = SoftDTW()
   running_dtw_loss = 0.
   with torch.no_grad():
       for batch in dataloader:
         model.eval()
-        if config.standardization:
-            input = layer_norm(batch[0].to(device))
-        else:
-            input = batch[0].to(device)
+        input = batch[0].to(device)
         batch_size = input.shape[0]
         pred = model(input)
         pred_error = loss(input.reshape(batch_size, -1),
@@ -62,15 +52,10 @@ def evaluate_one_epoch(dataloader, model, loss, device, config):
                                     pred.reshape(batch_size, -1)).item()
   return running_loss / len(dataloader), running_dtw_loss / len(dataloader)
 
-def plot_pred(batch, model, device, config, path):
-    if config.standardization:
-        layer_norm = nn.LayerNorm((1, config.sample_size), elementwise_affine=False).to(device)
+def plot_pred(batch, model, device, path):
     with torch.no_grad():
         model.eval()
-        if config.standardization:
-            input = layer_norm(batch[0].to(device))
-        else:
-            input = batch[0].to(device)
+        input = batch[0].to(device)
         pred = model(input)
         batch_size = input.shape[0]
         plt.figure(figsize=(10, 5*batch_size))
@@ -106,17 +91,17 @@ if __name__ == "__main__":
                         level=logging.DEBUG)
     logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
-    train_dataset, val_dataset = create_dataset(config.file, config.train_per, 1, config.sample_size, config.data_transform)
+    train_dataset, val_dataset = create_dataset(config.file, config.train_per, 1, config.sample_size,
+                                                config.data_transform, config.standardization)
     train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True)
     val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    if config.model == "tcn_ae":
-        from models.tcn.tcn_ae import TCN_AE
-        model = TCN_AE(config.num_channels, config.depth, config.kernel_size, config.btk_channels, config.down_factor).to(device)
-    else:
-        raise NotImplementedError()
+
+    from models.tcn.tcn_ae import CNN_AE_u
+    model = CNN_AE_u(config.model, (1, config.sample_size), config.base_dim, config.depth, config.kernel_size,
+                     config.scale_factor, config.embed_size, config.dilation, config.residual).to(device)
 
     print(model)
 
@@ -132,8 +117,8 @@ if __name__ == "__main__":
     dtw_loss = []
 
     for epoch in range(config.num_epochs):
-        tl = train_one_epoch(train_dataloader, model, loss, optimizer, device, config)
-        vl, dtwl = evaluate_one_epoch(val_dataloader, model, loss, device, config)
+        tl = train_one_epoch(train_dataloader, model, loss, optimizer, device)
+        vl, dtwl = evaluate_one_epoch(val_dataloader, model, loss, device)
         scheduler.step(vl)
         train_loss.append(tl)
         val_loss.append(vl)
@@ -142,7 +127,7 @@ if __name__ == "__main__":
         print(" EPOCH {0} #### TRAIN LOSS {1} #### VAL LOSS {2} ".format(epoch, train_loss[-1], val_loss[-1]))
         if epoch % config.plot_step == 0:
             path = os.path.join(results_folder, "epoch " + str(epoch) + ".jpg")
-            plot_pred(plot_batch, model, device, config, path)
+            plot_pred(plot_batch, model, device, path)
 
     plt.figure(figsize=(10, 10))
     plt.subplot(1, 2, 1)

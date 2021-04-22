@@ -5,7 +5,7 @@ import pandas as pd
 import torch
 from torch.utils.data import TensorDataset
 
-def create_dataset(file, train_per, seq_length, step_size, transformation):
+def create_dataset(file, train_per, seq_length, step_size, transformation, standardization):
   df = pd.read_csv(file)
   data = df["open"].values
   if transformation == "rdiff":
@@ -18,9 +18,13 @@ def create_dataset(file, train_per, seq_length, step_size, transformation):
   train, val = [], []
   for i in range(train_size):
     sample = data[i: i + seq_length * step_size].astype(np.float32)
+    if standardization:
+        sample = (sample - np.mean(sample)) / np.std(sample)
     train.append(np.split(sample, seq_length))
   for i in range(train_size, len(data) - seq_length * step_size):
     sample = data[i: i + seq_length * step_size].astype(np.float32)
+    if standardization:
+        sample = (sample - np.mean(sample)) / np.std(sample)
     val.append(np.split(sample, seq_length))
   train, val = np.array(train), np.array(val)
   return TensorDataset(torch.from_numpy(train)), TensorDataset(torch.from_numpy(val))
