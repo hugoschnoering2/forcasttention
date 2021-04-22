@@ -2,9 +2,6 @@
 import torch
 import torch.nn as nn
 
-from models.tcn.tcn import Chomp1d
-
-
 class Chomp1d(nn.Module):
     """
     source for this class : https://github.com/locuslab/TCN/blob/master/TCN/tcn.py
