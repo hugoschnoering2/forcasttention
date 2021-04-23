@@ -1,6 +1,6 @@
-model : "lstm_ae"
-num_layers_encoder : 1
-num_layers_decoder : 1
+model : "lstm_ae_all"
+num_layers_encoder : 2
+num_layers_decoder : 2
 layer_norm : false
 seed : 1
 results_folder : ""
@@ -10,8 +10,11 @@ standardization : true
 train_per : 0.7
 seq_length : 5
 step_size : 24
-embed_size : 50
+hidden_size : 50
+embed_size : 10
+adam_hd : false
 batch_size : 32
 lr : 0.001
+dropout : 0.1
 num_epochs : 501
 plot_step : 100

@@ -16,7 +16,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from data_utils import create_dataset
+from data_utils import create_dataset_autoencoding as create_dataset
 from utils import _parse_args
 from soft_dtw_loss import SoftDTW
 
@@ -99,9 +99,9 @@ if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-    from models.tcn.tcn_ae import CNN_AE_u
-    model = CNN_AE_u(config.model, (1, config.sample_size), config.base_dim, config.depth, config.kernel_size,
-                     config.scale_factor, config.embed_size, config.dilation, config.residual).to(device)
+    from models.tcn.tcn import CNNAutoEncoder
+    model = CNNAutoEncoder(config.model, (1, config.sample_size), config.base_dim, config.depth, config.kernel_size,
+                           config.scale_factor, config.embed_size, config.dilation, config.residual, config.dropout).to(device)
 
     print(model)
 

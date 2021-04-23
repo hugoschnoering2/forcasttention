@@ -5,7 +5,7 @@ import pandas as pd
 import torch
 from torch.utils.data import TensorDataset
 
-def create_dataset(file, train_per, seq_length, step_size, transformation, standardization):
+def create_dataset_autoencoding(file, train_per, seq_length, step_size, transformation, standardization, tensor=True):
   df = pd.read_csv(file)
   data = df["open"].values
   if transformation == "rdiff":
@@ -27,4 +27,6 @@ def create_dataset(file, train_per, seq_length, step_size, transformation, stand
         sample = (sample - np.mean(sample)) / np.std(sample)
     val.append(np.split(sample, seq_length))
   train, val = np.array(train), np.array(val)
-  return TensorDataset(torch.from_numpy(train)), TensorDataset(torch.from_numpy(val))
+  if tensor:
+      return TensorDataset(torch.from_numpy(train)), TensorDataset(torch.from_numpy(val))
+  return train, val

@@ -16,7 +16,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from data_utils import create_dataset
+from data_utils import create_dataset_autoencoding as create_dataset
 from utils import _parse_args
 from soft_dtw_loss import SoftDTW
 
@@ -99,17 +99,21 @@ if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     if config.model == "lstm_ae":
-        from models.rnn.lstm_ae import LSTM_AE
-        model = LSTM_AE(config.step_size, config.embed_size, config.num_layers_encoder, config.num_layers_decoder, config.layer_norm).to(device)
+        from models.rnn.lstm import LSTMAutoEncoder
+        model = LSTMAutoEncoder(config.step_size, config.hidden_size, config.embed_size, config.num_layers_encoder,
+                                config.num_layers_decoder, config.layer_norm, config.dropout).to(device)
     elif config.model == "lstm_ae_all":
-        from models.rnn.lstm_ae import LSTM_AE_all
-        model = LSTM_AE_all(config.step_size, config.embed_size, config.num_layers_encoder, config.num_layers_decoder, config.layer_norm).to(device)
+        from models.rnn.lstm import LSTMAutoEncoderAll
+        model = LSTMAutoEncoderAll(config.step_size, config.hidden_size, config.embed_size, config.num_layers_encoder,
+                                   config.num_layers_decoder, config.layer_norm, config.dropout).to(device)
     elif config.model == "gru_ae":
-        from models.rnn.gru_ae import GRU_AE
-        model = GRU_AE(config.step_size, config.embed_size, config.num_layers_encoder, config.num_layers_decoder).to(device)
+        from models.rnn.gru import GRUAutoEncoder
+        model = GRUAutoEncoder(config.step_size, config.hidden_size, config.embed_size, config.num_layers_encoder,
+                               config.num_layers_decoder, config.dropout).to(device)
     elif config.model == "gru_ae_all":
-        from models.rnn.gru_ae import GRU_AE_all
-        model = GRU_AE_all(config.step_size, config.embed_size, config.num_layers_encoder, config.num_layers_decoder).to(device)
+        from models.rnn.gru import GRUAutoEncoderAll
+        model = GRUAutoEncoderAll(config.step_size, config.hidden_size, config.embed_size, config.num_layers_encoder,
+                                  config.num_layers_decoder, config.dropout).to(device)
     else:
         raise NotImplementedError()
 
