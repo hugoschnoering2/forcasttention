@@ -1,0 +1,11 @@
+model : "dict_learning"
+embed_size : 50
+sample_size : 128
+lambda_l : 0.1
+lambda_r : 0.1
+seed : 1
+results_folder : ""
+file : "data/BTCUSDT-1h-data.csv"
+data_transform : "logr"
+standardization : true
+train_per : 0.7

@@ -106,8 +106,12 @@ if __name__ == "__main__":
     print(model)
 
     loss = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, cooldown=int(config.num_epochs/20))
+    if config.adam_hd:
+        from adam_hd import Adam_HD
+        optimizer = Adam_HD(model.parameters(), lr=config.lr)
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, threshold=1e-4, factor=0.5, cooldown=20, verbose=True)
 
     for plot_batch in train_dataloader:
         break

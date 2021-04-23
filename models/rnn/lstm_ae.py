@@ -6,13 +6,13 @@ from models.rnn.lstm_ln import LSTM as LSTM_LN
 
 class LSTM_AE(nn.Module):
 
-  def __init__(self, input_dim, hidden_dim, num_layers_encoder, num_layers_decoder, layer_norm=False):
+  def __init__(self, input_dim, hidden_dim, num_layers_encoder, num_layers_decoder, layer_norm=False, dropout=0.1):
     super().__init__()
 
     lstm_module = LSTM_LN if layer_norm else nn.LSTM
 
-    self.encoder = lstm_module(input_size=input_dim, hidden_size=hidden_dim, num_layers=num_layers_encoder)
-    self.decoder = lstm_module(input_size=hidden_dim, hidden_size=hidden_dim, num_layers=num_layers_decoder, proj_size=input_dim)
+    self.encoder = lstm_module(input_size=input_dim, hidden_size=hidden_dim, num_layers=num_layers_encoder, dropout=dropout)
+    self.decoder = lstm_module(input_size=hidden_dim, hidden_size=hidden_dim, num_layers=num_layers_decoder, proj_size=input_dim, dropout=dropout)
 
   def forward(self, x):
     """
@@ -26,12 +26,12 @@ class LSTM_AE(nn.Module):
 
 class LSTM_AE_all(nn.Module):
 
-    def __init__(self, input_dim, hidden_dim, num_layers_encoder, num_layers_decoder, layer_norm=False):
+    def __init__(self, input_dim, hidden_dim, num_layers_encoder, num_layers_decoder, layer_norm=False, dropout=0.1):
       super().__init__()
       lstm_module = LSTM_LN if layer_norm else nn.LSTM
       assert hidden_dim < input_dim, "embedding dim is greater than the input dim..."
-      self.encoder = lstm_module(input_size=input_dim, hidden_size=hidden_dim, num_layers=num_layers_encoder)
-      self.decoder = lstm_module(input_size=hidden_dim, hidden_size=hidden_dim, num_layers=num_layers_decoder)
+      self.encoder = lstm_module(input_size=input_dim, hidden_size=hidden_dim, num_layers=num_layers_encoder, dropout=dropout)
+      self.decoder = lstm_module(input_size=hidden_dim, hidden_size=hidden_dim, num_layers=num_layers_decoder, dropout=dropout)
       self.activation = nn.ReLU()
       self.linear = nn.Linear(in_features=hidden_dim, out_features=input_dim)
 

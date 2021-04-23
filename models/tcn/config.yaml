@@ -1,7 +1,7 @@
 model : "cnn_ae"
 residual : true
 base_dim : 8
-depth : 2
+depth : 1
 kernel_size : 7
 dilation : 1
 scale_factor : 4
@@ -15,5 +15,6 @@ train_per : 0.7
 sample_size : 128
 batch_size : 32
 lr : 0.001
+adam_hd : true
 num_epochs : 501
 plot_step : 10
