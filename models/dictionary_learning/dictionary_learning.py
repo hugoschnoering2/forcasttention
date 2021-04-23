@@ -12,7 +12,7 @@ import pandas as pd
 
 import matplotlib.pyplot as plt
 
-from data_utils import create_dataset
+from data_utils import create_dataset_autoencoding as create_dataset
 from utils import _parse_args
 
 from sporco.dictlrn import bpdndl
