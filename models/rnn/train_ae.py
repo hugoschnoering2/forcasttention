@@ -106,6 +106,10 @@ if __name__ == "__main__":
         from models.rnn.lstm import LSTMAutoEncoderAll
         model = LSTMAutoEncoderAll(config.step_size, config.hidden_size, config.embed_size, config.num_layers_encoder,
                                    config.num_layers_decoder, config.layer_norm, config.dropout).to(device)
+    elif config.model == "lstm_ae_cnn":
+        from models.rnn.lstm import CNNLSTMAutoEncoder
+        model = CNNLSTMAutoEncoder(config.step_size, config.input_size, config.hidden_size, config.embed_size, config.num_layers_encoder,
+                                   config.num_layers_decoder, config.layer_norm, config.dropout).to(device)
     elif config.model == "gru_ae":
         from models.rnn.gru import GRUAutoEncoder
         model = GRUAutoEncoder(config.step_size, config.hidden_size, config.embed_size, config.num_layers_encoder,
@@ -125,7 +129,7 @@ if __name__ == "__main__":
         optimizer = Adam_HD(model.parameters(), lr=config.lr)
     else:
         optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, cooldown=int(config.num_epochs/20))
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, cooldown=int(config.num_epochs/20), verbose=True)
 
     for plot_batch in train_dataloader:
         break

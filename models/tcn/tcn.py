@@ -140,7 +140,7 @@ class CNNEncoder(nn.Module):
             prev_dim = next_dim
         if tcn:
             encoder.extend([nn.Conv1d(prev_dim, prev_dim, kernel_size, dilation=dilation, padding=(kernel_size-1) * dilation),
-                            Chomp1d(padding), nn.ReLU(), nn.Dropout(p=dropout)])
+                            Chomp1d((kernel_size-1) * dilation)), nn.ReLU(), nn.Dropout(p=dropout)])
         else:
             encoder.extend([nn.Conv1d(prev_dim, prev_dim, kernel_size, dilation=dilation, padding=(kernel_size-1) * dilation // 2),
                             nn.ReLU(), nn.Dropout(p=dropout)])
