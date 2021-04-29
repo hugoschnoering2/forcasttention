@@ -3,7 +3,6 @@ import sys
 sys.path.append(".")
 
 import os
-import logging
 
 import yaml
 import datetime
@@ -19,6 +18,7 @@ from torch.utils.data import DataLoader
 from data_utils import create_dataset_autoencoding as create_dataset
 from utils import _parse_args
 from soft_dtw_loss import SoftDTW
+
 from earlyStopping import EarlyStopping
 
 def train_one_epoch(dataloader, model, loss, optimizer, device):
@@ -84,63 +84,22 @@ if __name__ == "__main__":
     with open(os.path.join(results_folder, "config.yaml"), "w") as f:
         f.write(yaml.dump(config_yaml))
 
-
-    logging.basicConfig(filename=os.path.join(results_folder, "log_file.log"),
-                        filemode='w',
-                        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-                        datefmt='%H:%M:%S',
-                        level=logging.DEBUG)
-    logging.getLogger("matplotlib").setLevel(logging.WARNING)
-
-    train_dataset, val_dataset = create_dataset(config.file, config.train_per, config.seq_length, config.step_size,
+    train_dataset, val_dataset = create_dataset(config.file, config.train_per, 1, config.step_size,
                                                 config.data_transform, config.standardization)
     train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True)
     val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    if config.model == "lstm_ae":
-        from models.rnn.lstm import LSTMAutoEncoder
-        model = LSTMAutoEncoder(config.step_size, config.hidden_size, config.embed_size, config.num_layers_encoder,
-                                config.num_layers_decoder, config.layer_norm, config.dropout).to(device)
-    elif config.model == "lstm_ae_all":
-        from models.rnn.lstm import LSTMAutoEncoderAll
-        model = LSTMAutoEncoderAll(config.step_size, config.hidden_size, config.embed_size, config.num_layers_encoder,
-                                   config.num_layers_decoder, config.layer_norm, config.dropout).to(device)
-    elif config.model == "lstm_ae_cnn":
-        from models.rnn.lstm import CNNLSTMAutoEncoder
-        model = CNNLSTMAutoEncoder(config.step_size, config.input_size, config.hidden_size, config.embed_size, config.num_layers_encoder,
-                                   config.num_layers_decoder, config.layer_norm, config.dropout)
-        if config.pretraining_folder != "":
-            model.CNN_pre_LSTM.load_state_dict(torch.load(os.path.join(config.pretraining_folder, "cnn_encoder.pt")))
-            model.CNN_post_LSTM.load_state_dict(torch.load(os.path.join(config.pretraining_folder, "cnn_decoder.pt")))
-        if config.freeze:
-            for p in model.CNN_pre_LSTM.parameters():
-                p.requires_grad = False
-            for p in model.CNN_post_LSTM.parameters():
-                p.requires_grad = False
-        model.to(device)
-    elif config.model == "gru_ae":
-        from models.rnn.gru import GRUAutoEncoder
-        model = GRUAutoEncoder(config.step_size, config.hidden_size, config.embed_size, config.num_layers_encoder,
-                               config.num_layers_decoder, config.dropout).to(device)
-    elif config.model == "gru_ae_all":
-        from models.rnn.gru import GRUAutoEncoderAll
-        model = GRUAutoEncoderAll(config.step_size, config.hidden_size, config.embed_size, config.num_layers_encoder,
-                                  config.num_layers_decoder, config.dropout).to(device)
-    else:
-        raise NotImplementedError()
-
-    print(model)
+    from models.rnn.lstm import CNN_autoencoder
+    model = CNN_autoencoder(config.step_size, config.embed_size).to(device)
 
     loss = nn.MSELoss()
-    if config.adam_hd:
-        from adam_hd import Adam_HD
-        optimizer = Adam_HD(model.parameters(), lr=config.lr)
-    else:
-        optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, threshold=5e-3, factor=0.5, cooldown=10, verbose=True)
-    es = EarlyStopping(patience=20, verbose=True, path=os.path.join(results_folder, "ae.pt"))
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, cooldown=20, verbose=True)
+    es_encoder = EarlyStopping(path=os.path.join(results_folder, "cnn_encoder.pt"), patience=30)
+    es_decoder = EarlyStopping(path=os.path.join(results_folder, "cnn_decoder.pt"), patience=30)
+
     for plot_batch in train_dataloader:
         break
 
@@ -151,18 +110,17 @@ if __name__ == "__main__":
     for epoch in range(config.num_epochs):
         tl = train_one_epoch(train_dataloader, model, loss, optimizer, device)
         vl, dtwl = evaluate_one_epoch(val_dataloader, model, loss, device)
-        stop = es(vl, model)
+        stop = es_encoder(vl, model.encoder)
+        es_decoder(vl, model.decoder)
         scheduler.step(vl)
         train_loss.append(tl)
         val_loss.append(vl)
         dtw_loss.append(dtwl)
-        logging.info(" EPOCH {0} #### TRAIN LOSS {1} #### VAL LOSS {2} ".format(epoch, train_loss[-1], val_loss[-1]))
         print(" EPOCH {0} #### TRAIN LOSS {1} #### VAL LOSS {2} ".format(epoch, train_loss[-1], val_loss[-1]))
         if epoch % config.plot_step == 0:
             path = os.path.join(results_folder, "epoch " + str(epoch) + ".jpg")
             plot_pred(plot_batch, model, device, path)
         if stop:
-            print("Breaking the training")
             break
 
     plt.figure(figsize=(10, 10))
